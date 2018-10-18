@@ -11,32 +11,35 @@ import edu.eci.arsw.blueprints.persistence.BlueprintNotFoundException;
 import edu.eci.arsw.blueprints.persistence.BlueprintPersistenceException;
 import edu.eci.arsw.blueprints.persistence.BlueprintsPersistence;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author hcadavid
  */
-public class InMemoryBlueprintPersistence implements BlueprintsPersistence{
+@Service
+public class InMemoryBlueprintPersistence implements BlueprintsPersistence {
 
-    private final Map<Tuple<String,String>,Blueprint> blueprints=new HashMap<>();
+    private final Map<Tuple<String, String>, Blueprint> blueprints = new HashMap<>();
 
     public InMemoryBlueprintPersistence() {
         //load stub data
-        Point[] pts=new Point[]{new Point(140, 140),new Point(115, 115)};
-        Blueprint bp=new Blueprint("_authorname_", "_bpname_ ",pts);
-        blueprints.put(new Tuple<>(bp.getAuthor(),bp.getName()), bp);
-        
-    }    
-    
+        Point[] pts = new Point[]{new Point(140, 140), new Point(115, 115)};
+        Blueprint bp = new Blueprint("_authorname_", "_bpname_ ", pts);
+        blueprints.put(new Tuple<>(bp.getAuthor(), bp.getName()), bp);
+
+    }
+
     @Override
     public void saveBlueprint(Blueprint bp) throws BlueprintPersistenceException {
-        if (blueprints.containsKey(new Tuple<>(bp.getAuthor(),bp.getName()))){
-            throw new BlueprintPersistenceException("The given blueprint already exists: "+bp);
+        if (blueprints.containsKey(new Tuple<>(bp.getAuthor(), bp.getName()))) {
+            throw new BlueprintPersistenceException("The given blueprint already exists: " + bp);
+        } else {
+            blueprints.put(new Tuple<>(bp.getAuthor(), bp.getName()), bp);
         }
-        else{
-            blueprints.put(new Tuple<>(bp.getAuthor(),bp.getName()), bp);
-        }        
     }
 
     @Override
@@ -44,6 +47,24 @@ public class InMemoryBlueprintPersistence implements BlueprintsPersistence{
         return blueprints.get(new Tuple<>(author, bprintname));
     }
 
-    
-    
+    @Override
+    public Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException {
+        Set<Blueprint> blueprintsSet = new HashSet<>();
+        for (Tuple<String, String> x : blueprints.keySet()) {
+            if (author.equals(x.getElem1())) {
+                blueprintsSet.add(blueprints.get(x));
+            }
+        }
+        return blueprintsSet;
+    }
+
+    @Override
+    public Set<Blueprint> getAllBlueprints() throws BlueprintNotFoundException {
+        Set<Blueprint> bpsToReturn = new HashSet<>();
+        for(Tuple<String, String> x : blueprints.keySet()){
+            bpsToReturn.add(blueprints.get(x));
+        }
+        return bpsToReturn;
+    }
+
 }
